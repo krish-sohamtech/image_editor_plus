@@ -56,12 +56,15 @@ class ImageEditorCustom extends StatelessWidget {
   final o.TextOption? textOption;
 
   final themeController;
-
+final kWhiteColor;
+  final kBlackColor;
   const ImageEditorCustom({
     super.key,
     this.image,
     this.themeController,
-    this.images,
+    this.kWhiteColor,
+    this.kBlackColor,
+this.images,
     this.savePath,
     Color? appBarColor,
     this.imagePickerOption,
@@ -86,8 +89,10 @@ class ImageEditorCustom extends StatelessWidget {
     }
 
     return SingleImageEditor(
+      kBlackColor: kBlackColor ,
+      kWhiteColor: kWhiteColor,
+      themeController: themeController,
       image: image,
-      controller: themeController,
       savePath: savePath,
       imagePickerOption: imagePickerOption,
       cropOption: cropOption,
@@ -196,7 +201,7 @@ class SingleImageEditor extends StatefulWidget {
     this.flipOption = const o.FlipOption(),
     this.rotateOption = const o.RotateOption(),
     this.textOption = const o.TextOption(),
-    required controller,
+
     this.themeController,
     this.kWhiteColor,
     this.kBlackColor,
