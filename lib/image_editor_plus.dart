@@ -9,16 +9,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:gallery2022/utils/constant.dart';
 import 'package:get/get.dart';
-
 import 'package:hand_signature/signature.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_editor_plus/data/image_item.dart';
 import 'package:image_editor_plus/data/layer.dart';
+import 'package:image_editor_plus/image_editor_plus.dart';
 import 'package:image_editor_plus/layers/background_blur_layer.dart';
 import 'package:image_editor_plus/layers/background_layer.dart';
 import 'package:image_editor_plus/layers/emoji_layer.dart';
-
+import 'package:image_editor_plus/layers/image_layer.dart';
 import 'package:image_editor_plus/layers/text_layer.dart';
 import 'package:image_editor_plus/loading_screen.dart';
 import 'package:image_editor_plus/modules/all_emojies.dart';
@@ -28,8 +29,6 @@ import 'package:image_editor_plus/modules/text.dart';
 import 'package:image_editor_plus/options.dart' as o;
 import 'package:image_picker/image_picker.dart';
 import 'package:screenshot/screenshot.dart';
-
-// import 'modules/colors_picker.dart';
 
 late Size viewportSize;
 double viewportRatio = 1;
@@ -41,10 +40,11 @@ String i18n(String sourceString) =>
     _translations[sourceString.toLowerCase()] ?? sourceString;
 
 /// Single endpoint for MultiImageEditor & SingleImageEditor
-class ImageEditorCustom extends StatelessWidget {
+class ImageEditor extends StatelessWidget {
   final dynamic image;
   final List? images;
   final String? savePath;
+  final themecantroller;
   final o.ImagePickerOption? imagePickerOption;
   final o.CropOption? cropOption;
   final o.BlurOption? blurOption;
@@ -55,16 +55,10 @@ class ImageEditorCustom extends StatelessWidget {
   final o.RotateOption? rotateOption;
   final o.TextOption? textOption;
 
-  final themeController;
-final kWhiteColor;
-  final kBlackColor;
-  const ImageEditorCustom({
-    super.key,
+  const ImageEditor({
+    Key? key,
     this.image,
-    this.themeController,
-    this.kWhiteColor,
-    this.kBlackColor,
-this.images,
+    this.images,
     this.savePath,
     Color? appBarColor,
     this.imagePickerOption,
@@ -76,7 +70,8 @@ this.images,
     this.flipOption = const o.FlipOption(),
     this.rotateOption = const o.RotateOption(),
     this.textOption = const o.TextOption(),
-  });
+    this.themecantroller,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -89,9 +84,6 @@ this.images,
     }
 
     return SingleImageEditor(
-      kBlackColor: kBlackColor ,
-      kWhiteColor: kWhiteColor,
-      themeController: themeController,
       image: image,
       savePath: savePath,
       imagePickerOption: imagePickerOption,
@@ -113,64 +105,29 @@ this.images,
   }
 
   /// Set custom theme properties default is dark theme with white text
-  // static ThemeData theme = ThemeData(
-  //   // background color
-  //   scaffoldBackgroundColor: Colors.white,
-  //   colorScheme: const ColorScheme.dark(
-  //     background: Colors.white,
-  //   ),
-  //   appBarTheme: const AppBarTheme(
-  //     backgroundColor: Color(0xFFFF948B),
-  //     iconTheme: IconThemeData(color: Colors.white),
-  //     systemOverlayStyle: SystemUiOverlayStyle.light,
-  //     toolbarTextStyle: TextStyle(color: Colors.white),
-  //     titleTextStyle: TextStyle(color: Colors.white),
-  //   ),
-  //   bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-  //     backgroundColor: Color(0xFFFF948B),
-  //   ),
-  //   iconTheme: const IconThemeData(
-  //     color: Colors.white,
-  //   ),
-  //   textTheme: const TextTheme(
-  //     bodyMedium: TextStyle(color: Colors.white),
-  //   ),
-  // );
+  static ThemeData theme = ThemeData(
+    scaffoldBackgroundColor: Colors.black,
+    colorScheme: const ColorScheme.dark(
+      background: Colors.black,
+    ),
+    appBarTheme: const AppBarTheme(
+      backgroundColor: Colors.black87,
+      iconTheme: IconThemeData(color: Colors.white),
+      systemOverlayStyle: SystemUiOverlayStyle.light,
+      toolbarTextStyle: TextStyle(color: Colors.white),
+      titleTextStyle: TextStyle(color: Colors.white),
+    ),
+    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+      backgroundColor: Colors.black,
+    ),
+    iconTheme: const IconThemeData(
+      color: Colors.white,
+    ),
+    textTheme: const TextTheme(
+      bodyMedium: TextStyle(color: Colors.white),
+    ),
+  );
 }
-
-/// Show multiple image carousel to edit multple images at one and allow more images to be added
-// class MultiImageEditor extends StatefulWidget {
-//   final List images;
-//   final String? savePath;
-
-//   final o.ImagePickerOption? imagePickerOption;
-//   final o.CropOption? cropOption;
-//   final o.BlurOption? blurOption;
-//   final o.BrushOption? brushOption;
-//   final o.EmojiOption? emojiOption;
-//   final o.FiltersOption? filtersOption;
-//   final o.FlipOption? flipOption;
-//   final o.RotateOption? rotateOption;
-//   final o.TextOption? textOption;
-
-//   const MultiImageEditor({Key? key,
-
-//     this.images = const [],
-//     this.savePath,
-//     this.imagePickerOption,
-//     this.cropOption = const o.CropOption(),
-//     this.blurOption = const o.BlurOption(),
-//     this.brushOption = const o.BrushOption(),
-//     this.emojiOption = const o.EmojiOption(),
-//     this.filtersOption = const o.FiltersOption(),
-//     this.flipOption = const o.FlipOption(),
-//     this.rotateOption = const o.RotateOption(),
-//     this.textOption = const o.TextOption(),
-//   }) : super(key: key);
-
-//   @override
-//   createState() => _MultiImageEditorState();
-// }
 
 /// Image editor with all option available
 class SingleImageEditor extends StatefulWidget {
@@ -186,8 +143,7 @@ class SingleImageEditor extends StatefulWidget {
   final o.FlipOption? flipOption;
   final o.RotateOption? rotateOption;
   final o.TextOption? textOption;
-   final themeController; final kWhiteColor;
-  final kBlackColor;
+
   const SingleImageEditor({
     Key? key,
     this.image,
@@ -201,10 +157,6 @@ class SingleImageEditor extends StatefulWidget {
     this.flipOption = const o.FlipOption(),
     this.rotateOption = const o.RotateOption(),
     this.textOption = const o.TextOption(),
-
-    this.themeController,
-    this.kWhiteColor,
-    this.kBlackColor,
   }) : super(key: key);
 
   @override
@@ -232,12 +184,12 @@ class _SingleImageEditorState extends State<SingleImageEditor> {
           scrollDirection: Axis.horizontal,
           child: Row(children: [
             IconButton(
-              padding: EdgeInsets.symmetric(horizontal: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 8),
               icon: Icon(Icons.undo,
                   color: layers.length > 1 || removedLayers.isNotEmpty
-                      ? widget.themeController.theme == ThemeMode.dark
-                          ? widget.kWhiteColor
-                          : widget.kBlackColor
+                      ? themeController.theme == ThemeMode.dark
+                          ? Colors.white
+                          : Colors.black
                       : Colors.grey),
               onPressed: () {
                 if (removedLayers.isNotEmpty) {
@@ -257,9 +209,9 @@ class _SingleImageEditorState extends State<SingleImageEditor> {
               padding: const EdgeInsets.symmetric(horizontal: 8),
               icon: Icon(Icons.redo,
                   color: undoLayers.isNotEmpty
-                      ? widget.themeController.theme == ThemeMode.dark
-                          ? widget.kWhiteColor
-                          : widget.kBlackColor
+                      ? themeController.theme == ThemeMode.dark
+                          ? Colors.white
+                          : Colors.black
                       : Colors.grey),
               onPressed: () {
                 if (undoLayers.isEmpty) return;
@@ -297,7 +249,10 @@ class _SingleImageEditorState extends State<SingleImageEditor> {
               ),
             IconButton(
               padding: const EdgeInsets.symmetric(horizontal: 8),
-              icon: const Icon(Icons.check),
+              icon: Icon(Icons.check,
+                  color: themeController.theme == ThemeMode.dark
+                      ? Colors.white
+                      : Colors.black),
               onPressed: () async {
                 resetTransformation();
                 setState(() {});
@@ -346,9 +301,9 @@ class _SingleImageEditorState extends State<SingleImageEditor> {
 
   /// obtain image Uint8List by merging layers
   Future<Uint8List?> getMergedImage() async {
-    if (layers.length == 5 && layers.first is BackgroundLayerData) {
+    if (layers.length == 1 && layers.first is BackgroundLayerData) {
       return (layers.first as BackgroundLayerData).file.image;
-    } else if (layers.length == 5 && layers.first is ImageLayerData) {
+    } else if (layers.length == 1 && layers.first is ImageLayerData) {
       return (layers.first as ImageLayerData).image.image;
     }
 
@@ -363,34 +318,24 @@ class _SingleImageEditorState extends State<SingleImageEditor> {
     var layersStack = Stack(
       children: layers.map((layerItem) {
         // Background layer
-
         if (layerItem is BackgroundLayerData) {
-          return Container(
-            transformAlignment: Alignment.center,
-            color: Colors.transparent,
-            alignment: Alignment.center,
-            child: BackgroundLayer(
-              layerData: layerItem,
-              onUpdate: () {
-                setState(() {});
-              },
-            ),
+          return BackgroundLayer(
+            layerData: layerItem,
+            onUpdate: () {
+              setState(() {});
+            },
           );
         }
 
         // Image layer
-        // if (layerItem is ImageLayerData) {
-        //   return Center(
-        //     child: Expanded(
-        //       child: ImageLayer(
-        //         layerData: layerItem,
-        //         onUpdate: () {
-        //           setState(() {});
-        //         },
-        //       ),
-        //     ),
-        //   );
-        // }
+        if (layerItem is ImageLayerData) {
+          return ImageLayer(
+            layerData: layerItem,
+            onUpdate: () {
+              setState(() {});
+            },
+          );
+        }
 
         // Background blur layer
         if (layerItem is BackgroundBlurLayerData && layerItem.radius > 0) {
@@ -433,9 +378,9 @@ class _SingleImageEditorState extends State<SingleImageEditor> {
 
     return Obx(
       () => Theme(
-        data: widget.themeController.theme == ThemeMode.dark
-            ? widget.themeController.darkTheme
-            : widget.themeController.lightTheme,
+        data: themeController.theme == ThemeMode.dark
+            ? themeController.darkTheme
+            : themeController.lightTheme,
         child: Scaffold(
           key: scaffoldGlobalKey,
           body: Stack(children: [
@@ -504,15 +449,13 @@ class _SingleImageEditorState extends State<SingleImageEditor> {
               top: 0,
               left: 0,
               right: 0,
-              // app bar Color
               child: Obx(
                 () => Container(
                   decoration: BoxDecoration(
-                    color: widget.themeController.theme == ThemeMode.dark
-                        ? widget.themeController.darkTheme.appBarTheme
-                            .backgroundColor
-                        : widget.themeController.lightTheme.appBarTheme
-                            .backgroundColor,
+                    color: themeController.theme == ThemeMode.dark
+                        ? themeController.darkTheme.appBarTheme.backgroundColor
+                        : themeController
+                            .lightTheme.appBarTheme.backgroundColor,
                   ),
                   child: SafeArea(
                     child: Row(
@@ -524,10 +467,12 @@ class _SingleImageEditorState extends State<SingleImageEditor> {
             ),
             if (layers.length > 1)
               Positioned(
-                bottom: 1,
+                bottom: 64,
                 left: 0,
                 child: SafeArea(
                   child: Container(
+                    height: 48,
+                    width: 48,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: Colors.white.withAlpha(100),
@@ -548,7 +493,7 @@ class _SingleImageEditorState extends State<SingleImageEditor> {
                             ),
                           ),
                           context: context,
-                          // backgroundColor: Colors.transparent,
+                          backgroundColor: Colors.transparent,
                           builder: (context) => SafeArea(
                             child: ManageLayersOverlay(
                               layers: layers,
@@ -563,17 +508,15 @@ class _SingleImageEditorState extends State<SingleImageEditor> {
                 ),
               ),
           ]),
-          // bottom navbar color
           bottomNavigationBar: Container(
             // color: Colors.black45,
             alignment: Alignment.bottomCenter,
             height: 86 + MediaQuery.of(context).padding.bottom,
             padding: const EdgeInsets.symmetric(vertical: 16),
             decoration: BoxDecoration(
-              color: widget.themeController.theme == ThemeMode.dark
-                  ? widget.themeController.darkTheme.appBarTheme.backgroundColor
-                  : widget
-                      .themeController.lightTheme.appBarTheme.backgroundColor,
+              color: themeController.theme == ThemeMode.dark
+                  ? themeController.darkTheme.appBarTheme.backgroundColor
+                  : themeController.lightTheme.appBarTheme.backgroundColor,
               shape: BoxShape.rectangle,
               //   boxShadow: [
               //     BoxShadow(blurRadius: 1),
@@ -587,9 +530,6 @@ class _SingleImageEditorState extends State<SingleImageEditor> {
                   children: <Widget>[
                     if (widget.cropOption != null)
                       BottomButton(
-                              kBlackColor: widget.kBlackColor,
-                                  kWhiteColor: widget.kWhiteColor,
-                                  themeController: widget.themeController,
                         icon: Icons.crop,
                         text: i18n('Crop'),
                         onTap: () async {
@@ -604,9 +544,6 @@ class _SingleImageEditorState extends State<SingleImageEditor> {
                             context,
                             MaterialPageRoute(
                               builder: (context) => ImageCropper(
-                                      kBlackColor: widget.kBlackColor,
-                                  kWhiteColor: widget.kWhiteColor,
-                                  themeController: widget.themeController,
                                 image: mergedImage!,
                                 availableRatios: widget.cropOption!.ratios,
                               ),
@@ -624,9 +561,6 @@ class _SingleImageEditorState extends State<SingleImageEditor> {
                       ),
                     if (widget.brushOption != null)
                       BottomButton(
-                              kBlackColor: widget.kBlackColor,
-                                  kWhiteColor: widget.kWhiteColor,
-                                  themeController: widget.themeController,
                         icon: Icons.edit,
                         text: i18n('Brush'),
                         onTap: () async {
@@ -635,9 +569,6 @@ class _SingleImageEditorState extends State<SingleImageEditor> {
                               context,
                               MaterialPageRoute(
                                 builder: (context) => ImageEditorDrawing(
-                                     kBlackColor: widget.kBlackColor,
-                                  kWhiteColor: widget.kWhiteColor,
-                                  themeController: widget.themeController,
                                   image: currentImage,
                                   options: widget.brushOption!,
                                 ),
@@ -672,9 +603,6 @@ class _SingleImageEditorState extends State<SingleImageEditor> {
                               context,
                               MaterialPageRoute(
                                 builder: (context) => ImageEditorDrawing(
-                                  kBlackColor: widget.kBlackColor,
-                                  kWhiteColor: widget.kWhiteColor,
-                                  themeController: widget.themeController,
                                   image: ImageItem(mergedImage!),
                                   options: widget.brushOption!,
                                 ),
@@ -691,9 +619,6 @@ class _SingleImageEditorState extends State<SingleImageEditor> {
                       ),
                     if (widget.textOption != null)
                       BottomButton(
-                              kBlackColor: widget.kBlackColor,
-                                  kWhiteColor: widget.kWhiteColor,
-                                  themeController: widget.themeController,
                         icon: Icons.text_fields,
                         text: i18n('Text'),
                         onTap: () async {
@@ -716,9 +641,6 @@ class _SingleImageEditorState extends State<SingleImageEditor> {
                       ),
                     if (widget.flipOption != null)
                       BottomButton(
-                              kBlackColor: widget.kBlackColor,
-                                  kWhiteColor: widget.kWhiteColor,
-                                  themeController: widget.themeController,
                         icon: Icons.flip,
                         text: i18n('Flip'),
                         onTap: () {
@@ -729,10 +651,6 @@ class _SingleImageEditorState extends State<SingleImageEditor> {
                       ),
                     if (widget.rotateOption != null)
                       BottomButton(
-                              kBlackColor: widget.kBlackColor,
-                                  kWhiteColor: widget.kWhiteColor,
-                                  themeController: widget.themeController,
-                        
                         icon: Icons.rotate_left,
                         text: i18n('Rotate left'),
                         onTap: () {
@@ -746,9 +664,6 @@ class _SingleImageEditorState extends State<SingleImageEditor> {
                       ),
                     if (widget.rotateOption != null)
                       BottomButton(
-                              kBlackColor: widget.kBlackColor,
-                                  kWhiteColor: widget.kWhiteColor,
-                                  themeController: widget.themeController,
                         icon: Icons.rotate_right,
                         text: i18n('Rotate right'),
                         onTap: () {
@@ -762,9 +677,6 @@ class _SingleImageEditorState extends State<SingleImageEditor> {
                       ),
                     if (widget.blurOption != null)
                       BottomButton(
-                              kBlackColor: widget.kBlackColor,
-                                  kWhiteColor: widget.kWhiteColor,
-                                  themeController: widget.themeController,
                         icon: Icons.blur_on,
                         text: i18n('Blur'),
                         onTap: () {
@@ -792,13 +704,8 @@ class _SingleImageEditorState extends State<SingleImageEditor> {
                                 builder: (context, setS) {
                                   return SingleChildScrollView(
                                     child: Container(
-                                      decoration: BoxDecoration(
-                                        color: widget.themeController.theme ==
-                                                ThemeMode.dark
-                                            ? widget.themeController.darkTheme
-                                                .appBarTheme.backgroundColor
-                                            : widget.themeController.lightTheme
-                                                .appBarTheme.backgroundColor,
+                                      decoration: const BoxDecoration(
+                                        color: Colors.black87,
                                         borderRadius: BorderRadius.only(
                                             topRight: Radius.circular(10),
                                             topLeft: Radius.circular(10)),
@@ -948,9 +855,6 @@ class _SingleImageEditorState extends State<SingleImageEditor> {
                     // ),
                     if (widget.filtersOption != null)
                       BottomButton(
-                              kBlackColor: widget.kBlackColor,
-                                  kWhiteColor: widget.kWhiteColor,
-                                  themeController: widget.themeController,
                         icon: Icons.photo,
                         text: i18n('Filter'),
                         onTap: () async {
@@ -976,9 +880,6 @@ class _SingleImageEditorState extends State<SingleImageEditor> {
                             context,
                             MaterialPageRoute(
                               builder: (context) => ImageFilters(
-                                      kBlackColor: widget.kBlackColor,
-                                  kWhiteColor: widget.kWhiteColor,
-                                  themeController: widget.themeController,
                                 image: mergedImage!,
                                 options: widget.filtersOption,
                               ),
@@ -1007,20 +908,12 @@ class _SingleImageEditorState extends State<SingleImageEditor> {
                       ),
                     if (widget.emojiOption != null)
                       BottomButton(
-                              kBlackColor: widget.kBlackColor,
-                                  kWhiteColor: widget.kWhiteColor,
-                                  themeController: widget.themeController,
                         icon: FontAwesomeIcons.faceSmile,
                         text: i18n('Emoji'),
                         onTap: () async {
                           EmojiLayerData? layer = await showModalBottomSheet(
                             context: context,
-                            backgroundColor:
-                                widget.themeController.theme == ThemeMode.dark
-                                    ? widget.themeController.darkTheme
-                                        .appBarTheme.backgroundColor
-                                    : widget.themeController.lightTheme
-                                        .appBarTheme.backgroundColor,
+                            backgroundColor: Colors.black,
                             builder: (BuildContext context) {
                               return const Emojies();
                             },
@@ -1065,17 +958,13 @@ class BottomButton extends StatelessWidget {
   final VoidCallback? onTap, onLongPress;
   final IconData icon;
   final String text;
-  final themeController;
-  
-  final kWhiteColor;
-  
-  final kBlackColor;
+
   const BottomButton({
     Key? key,
     this.onTap,
     this.onLongPress,
     required this.icon,
-    required this.text, this.themeController, this.kWhiteColor, this.kBlackColor,
+    required this.text,
   }) : super(key: key);
 
   @override
@@ -1087,10 +976,12 @@ class BottomButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12),
         child: Column(
           children: [
-            Icon(icon,
-                color: themeController.theme == ThemeMode.dark
-                    ? kWhiteColor
-                    : kBlackColor),
+            Icon(
+              icon,
+              color: themeController.theme == ThemeMode.dark
+                  ? Colors.white
+                  : Colors.black,
+            ),
             const SizedBox(height: 8),
             Text(
               i18n(text),
@@ -1106,11 +997,7 @@ class BottomButton extends StatelessWidget {
 class ImageCropper extends StatefulWidget {
   final Uint8List image;
   final List<o.AspectRatio> availableRatios;
- final themeController;
-  
-  final kWhiteColor;
-  
-  final kBlackColor;
+
   const ImageCropper({
     Key? key,
     required this.image,
@@ -1121,7 +1008,7 @@ class ImageCropper extends StatefulWidget {
       o.AspectRatio(title: '5:4', ratio: 5 / 4),
       o.AspectRatio(title: '7:5', ratio: 7 / 5),
       o.AspectRatio(title: '16:9', ratio: 16 / 9),
-    ], this.themeController, this.kWhiteColor, this.kBlackColor,
+    ],
   }) : super(key: key);
 
   @override
@@ -1160,9 +1047,9 @@ class _ImageCropperState extends State<ImageCropper> {
 
     return Obx(
       () => Theme(
-        data: widget.themeController.theme == ThemeMode.dark
-            ? widget.themeController.darkTheme
-            : widget.themeController.lightTheme,
+        data: themeController.theme == ThemeMode.dark
+            ? themeController.darkTheme
+            : themeController.lightTheme,
         child: Scaffold(
           appBar: AppBar(
             actions: [
@@ -1187,10 +1074,9 @@ class _ImageCropperState extends State<ImageCropper> {
             ],
           ),
           body: Container(
-            // color: Colors.black,
-            color: widget.themeController.theme == ThemeMode.dark
-                ? widget.themeController.darkTheme.scaffoldBackgroundColor
-                : widget.themeController.lightTheme.scaffoldBackgroundColor,
+            color: themeController.theme == ThemeMode.dark
+                ? themeController.darkTheme.scaffoldBackgroundColor
+                : themeController.lightTheme.scaffoldBackgroundColor,
             child: ExtendedImage.memory(
               widget.image,
               cacheRawData: true,
@@ -1265,10 +1151,10 @@ class _ImageCropperState extends State<ImageCropper> {
                   Container(
                     height: 80,
                     decoration: BoxDecoration(
-                      color: widget.themeController.theme == ThemeMode.dark
-                          ? widget.themeController
+                      color: themeController.theme == ThemeMode.dark
+                          ? themeController
                               .darkTheme.appBarTheme.backgroundColor
-                          : widget.themeController
+                          : themeController
                               .lightTheme.appBarTheme.backgroundColor,
                       boxShadow: const [
                         BoxShadow(
@@ -1291,9 +1177,9 @@ class _ImageCropperState extends State<ImageCropper> {
                               icon: Icon(
                                 Icons.portrait,
                                 color: isLandscape == false
-                                    ? widget.themeController.theme == ThemeMode.dark
-                                        ? widget.kWhiteColor
-                                        : widget.kBlackColor
+                                    ? themeController.theme == ThemeMode.dark
+                                        ? Colors.white
+                                        : Colors.black
                                     : Colors.grey,
                               ),
                               onPressed: () {
@@ -1311,9 +1197,9 @@ class _ImageCropperState extends State<ImageCropper> {
                               icon: Icon(
                                 Icons.landscape,
                                 color: isLandscape
-                                    ? widget.themeController.theme == ThemeMode.dark
-                                        ? widget.kWhiteColor
-                                        : widget.kBlackColor
+                                    ? themeController.theme == ThemeMode.dark
+                                        ? Colors.white
+                                        : Colors.black
                                     : Colors.grey,
                               ),
                               onPressed: () {
@@ -1336,10 +1222,10 @@ class _ImageCropperState extends State<ImageCropper> {
                                     i18n(ratio.title),
                                     style: TextStyle(
                                       color: currentRatio == ratio.ratio
-                                          ? widget.themeController.theme ==
+                                          ? themeController.theme ==
                                                   ThemeMode.dark
-                                              ? widget.kWhiteColor
-                                              : widget.kBlackColor
+                                              ? Colors.white
+                                              : Colors.black
                                           : Colors.white54,
                                     ),
                                   )),
@@ -1386,16 +1272,12 @@ class ImageFilters extends StatefulWidget {
   /// apply each filter to given image in background and cache it to improve UX
   final bool useCache;
   final o.FiltersOption? options;
-final themeController;
-  
-  final kWhiteColor;
-  
-  final kBlackColor;
+
   const ImageFilters({
     Key? key,
     required this.image,
     this.useCache = true,
-    this.options, this.themeController, this.kWhiteColor, this.kBlackColor,
+    this.options,
   }) : super(key: key);
 
   @override
@@ -1428,9 +1310,9 @@ class _ImageFiltersState extends State<ImageFilters> {
   Widget build(BuildContext context) {
     return Obx(
       () => Theme(
-        data: widget.themeController.theme == ThemeMode.dark
-            ? widget.themeController.darkTheme
-            : widget.themeController.lightTheme,
+        data: themeController.theme == ThemeMode.dark
+            ? themeController.darkTheme
+            : themeController.lightTheme,
         child: Scaffold(
           appBar: AppBar(
             actions: [
@@ -1457,9 +1339,6 @@ class _ImageFiltersState extends State<ImageFilters> {
                     fit: BoxFit.contain,
                   ),
                   FilterAppliedImage(
-                          kBlackColor: widget.kBlackColor,
-                                  kWhiteColor: widget.kWhiteColor,
-                                  themeController: widget.themeController,
                     key: Key('selectedFilter:${selectedFilter.name}'),
                     image: widget.image,
                     filter: selectedFilter,
@@ -1476,9 +1355,9 @@ class _ImageFiltersState extends State<ImageFilters> {
           ),
           bottomNavigationBar: SafeArea(
             child: Container(
-              color: widget.themeController.theme == ThemeMode.dark
-                  ? widget.themeController.darkTheme.appBarTheme.backgroundColor
-                  : widget.themeController.lightTheme.appBarTheme.backgroundColor,
+              color: themeController.theme == ThemeMode.dark
+                  ? themeController.darkTheme.appBarTheme.backgroundColor
+                  : themeController.lightTheme.appBarTheme.backgroundColor,
               height: 140,
               child: Column(children: [
                 SizedBox(
@@ -1521,9 +1400,9 @@ class _ImageFiltersState extends State<ImageFilters> {
                                 borderRadius: BorderRadius.circular(48),
                                 border: Border.all(
                                   color: selectedFilter == filter
-                                      ? widget.themeController.theme == ThemeMode.dark
-                                          ? widget.kWhiteColor
-                                          : widget.kBlackColor
+                                      ? themeController.theme == ThemeMode.dark
+                                          ? Colors.white
+                                          : Colors.black
                                       : Colors.white54,
                                   width: 2,
                                 ),
@@ -1531,9 +1410,6 @@ class _ImageFiltersState extends State<ImageFilters> {
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(48),
                                 child: FilterAppliedImage(
-                                        kBlackColor: widget.kBlackColor,
-                                  kWhiteColor: widget.kWhiteColor,
-                                  themeController: widget.themeController,
                                   key:
                                       Key('filterPreviewButton:${filter.name}'),
                                   image: widget.image,
@@ -1566,15 +1442,14 @@ class FilterAppliedImage extends StatefulWidget {
   final BoxFit? fit;
   final Function(Uint8List)? onProcess;
   final double opacity;
-final themeController; final kWhiteColor;
-  final kBlackColor;
+
   const FilterAppliedImage({
     Key? key,
     required this.image,
     required this.filter,
     this.fit,
     this.onProcess,
-    this.opacity = 1, this.themeController, this.kWhiteColor, this.kBlackColor,
+    this.opacity = 1,
   }) : super(key: key);
 
   @override
@@ -1682,15 +1557,14 @@ class _FilterAppliedImageState extends State<FilterAppliedImage> {
 class ImageEditorDrawing extends StatefulWidget {
   final ImageItem image;
   final o.BrushOption options;
- final themeController; final kWhiteColor;
-  final kBlackColor;
+
   const ImageEditorDrawing({
     Key? key,
     required this.image,
     this.options = const o.BrushOption(
       showBackground: true,
       translatable: true,
-    ), this.themeController, this.kWhiteColor, this.kBlackColor,
+    ),
   }) : super(key: key);
 
   @override
@@ -1698,9 +1572,9 @@ class ImageEditorDrawing extends StatefulWidget {
 }
 
 class _ImageEditorDrawingState extends State<ImageEditorDrawing> {
-  Color pickerColor = Colors.black,
-      currentColor = Colors.black,
-      currentBackgroundColor = Colors.white;
+  Color pickerColor = Colors.white,
+      currentColor = Colors.white,
+      currentBackgroundColor = Colors.black;
   var screenshotController = ScreenshotController();
 
   final control = HandSignatureControl(
@@ -1740,9 +1614,9 @@ class _ImageEditorDrawingState extends State<ImageEditorDrawing> {
   Widget build(BuildContext context) {
     return Obx(
       () => Theme(
-        data: widget.themeController.theme == ThemeMode.dark
-            ? widget.themeController.darkTheme
-            : widget.themeController.lightTheme,
+        data: themeController.theme == ThemeMode.dark
+            ? themeController.darkTheme
+            : themeController.lightTheme,
         child: Scaffold(
           appBar: AppBar(
             automaticallyImplyLeading: false,
@@ -1760,9 +1634,9 @@ class _ImageEditorDrawingState extends State<ImageEditorDrawing> {
                 icon: Icon(
                   Icons.undo,
                   color: control.paths.isNotEmpty
-                      ? widget.themeController.theme == ThemeMode.dark
-                          ? widget.kWhiteColor
-                          : widget.kBlackColor
+                      ? themeController.theme == ThemeMode.dark
+                          ? Colors.white
+                          : Colors.black
                       : Colors.grey,
                 ),
                 onPressed: () {
@@ -1778,9 +1652,9 @@ class _ImageEditorDrawingState extends State<ImageEditorDrawing> {
                 icon: Icon(
                   Icons.redo,
                   color: undoList.isNotEmpty
-                      ? widget.themeController.theme == ThemeMode.dark
-                          ?widget. kWhiteColor
-                          : widget.kBlackColor
+                      ? themeController.theme == ThemeMode.dark
+                          ? Colors.white
+                          : Colors.black
                       : Colors.grey,
                 ),
                 onPressed: () {
@@ -1798,7 +1672,10 @@ class _ImageEditorDrawingState extends State<ImageEditorDrawing> {
 
                   if (widget.options.translatable) {
                     var data = await control.toImage(
-                      color: currentColor,
+                      color: themeController.theme == ThemeMode.dark
+                          ? Colors.white
+                          : Colors.black,
+                      // : Colors.grey,
                       height: widget.image.height,
                       width: widget.image.width,
                     );
@@ -1819,30 +1696,28 @@ class _ImageEditorDrawingState extends State<ImageEditorDrawing> {
               ),
             ],
           ),
-          body: Center(
-            child: Screenshot(
-              controller: screenshotController,
-              child: Container(
-                height: MediaQuery.of(context).size.height,
-                width: MediaQuery.of(context).size.width,
-                decoration: BoxDecoration(
-                  color: widget.options.showBackground
-                      ? null
-                      : currentBackgroundColor,
-                  image: widget.options.showBackground
-                      ? DecorationImage(
-                          image: Image.memory(widget.image.image).image,
-                          fit: BoxFit.contain,
-                        )
-                      : null,
-                ),
-                child: HandSignature(
-                  control: control,
-                  color: currentColor,
-                  width: 1.0,
-                  maxWidth: 7.0,
-                  type: SignatureDrawType.shape,
-                ),
+          body: Screenshot(
+            controller: screenshotController,
+            child: Container(
+              height: MediaQuery.of(context).size.height,
+              width: MediaQuery.of(context).size.width,
+              decoration: BoxDecoration(
+                color: widget.options.showBackground
+                    ? null
+                    : currentBackgroundColor,
+                image: widget.options.showBackground
+                    ? DecorationImage(
+                        image: Image.memory(widget.image.image).image,
+                        fit: BoxFit.contain,
+                      )
+                    : null,
+              ),
+              child: HandSignature(
+                control: control,
+                color: currentColor,
+                width: 1.0,
+                maxWidth: 7.0,
+                type: SignatureDrawType.shape,
               ),
             ),
           ),
@@ -1850,21 +1725,18 @@ class _ImageEditorDrawingState extends State<ImageEditorDrawing> {
             child: Container(
               height: 80,
               decoration: BoxDecoration(
-                color: widget.themeController.theme == ThemeMode.dark
-                    ? widget.themeController.darkTheme.appBarTheme.backgroundColor
-                    : widget.themeController.lightTheme.appBarTheme.backgroundColor,
-                boxShadow: [
-                  BoxShadow(color: Colors.black54, blurRadius: 2),
+                color: themeController.theme == ThemeMode.dark
+                    ? themeController.darkTheme.appBarTheme.backgroundColor
+                    : themeController.lightTheme.appBarTheme.backgroundColor,
+                boxShadow: const [
+                  BoxShadow(blurRadius: 2),
                 ],
               ),
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 children: <Widget>[
                   ColorButton(
-                       kBlackColor: widget.kBlackColor,
-                                  kWhiteColor: widget.kWhiteColor,
-                                  themeController: widget.themeController,
-                    color: Colors.amberAccent,
+                    color: Colors.yellow,
                     onTap: (color) {
                       showModalBottomSheet(
                         shape: const RoundedRectangleBorder(
@@ -1874,10 +1746,10 @@ class _ImageEditorDrawingState extends State<ImageEditorDrawing> {
                           ),
                         ),
                         context: context,
-                        backgroundColor: Colors.white54,
+                        backgroundColor: Colors.transparent,
                         builder: (context) {
                           return Container(
-                            color: Colors.white,
+                            color: Colors.black87,
                             padding: const EdgeInsets.all(20),
                             child: SingleChildScrollView(
                               child: Container(
@@ -1898,9 +1770,6 @@ class _ImageEditorDrawingState extends State<ImageEditorDrawing> {
                   ),
                   for (var color in widget.options.colors)
                     ColorButton(
-                         kBlackColor: widget.kBlackColor,
-                                  kWhiteColor: widget.kWhiteColor,
-                                  themeController: widget.themeController,
                       color: color.color,
                       onTap: (color) {
                         currentColor = color;
@@ -1923,13 +1792,12 @@ class ColorButton extends StatelessWidget {
   final Color color;
   final Function(Color) onTap;
   final bool isSelected;
- final themeController; final kWhiteColor;
-  final kBlackColor;
+
   const ColorButton({
     Key? key,
     required this.color,
     required this.onTap,
-    this.isSelected = false, this.themeController, this.kWhiteColor, this.kBlackColor,
+    this.isSelected = false,
   }) : super(key: key);
 
   @override
@@ -1947,9 +1815,9 @@ class ColorButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected
-                ?themeController.theme == ThemeMode.dark
-                    ? kWhiteColor
-                    : kBlackColor
+                ? themeController.theme == ThemeMode.dark
+                    ? Colors.white
+                    : Colors.white
                 : Colors.white54,
             width: isSelected ? 3 : 1,
           ),

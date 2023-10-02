@@ -25,11 +25,11 @@ class _ImageEditorExampleState extends State<ImageEditorExample> {
   @override
   void initState() {
     super.initState();
-    loadAsset("image.jpg");
+    // loadAsset("image.jpg");
   }
 
   void loadAsset(String name) async {
-    var data = await rootBundle.load('assets/$name');
+    var data = await rootBundle.load('example/assets/image.jpg');
     setState(() => imageData = data.buffer.asUint8List());
   }
 
